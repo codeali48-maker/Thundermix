@@ -1,5 +1,6 @@
 import type { NextRequest } from "next/server";
 import { z } from "zod";
+import { syncEnvAdmin } from "@/lib/auth/env-admin";
 import { ADMIN_TTL_HOURS, generateToken, setAdminCookie } from "@/lib/auth/tokens";
 import { callJson, withDb } from "@/lib/db/pool";
 import { dbErrorResponse, guardRequest, jsonError, jsonOk, parseBody } from "@/lib/http";
@@ -22,6 +23,7 @@ export async function POST(request: NextRequest) {
 
   const token = generateToken();
   try {
+    await syncEnvAdmin(body.data.email, body.data.password);
     const result = await withDb({}, (c) =>
       callJson<{ error?: string; id?: string; display_name?: string; role?: string }>(
         c,
